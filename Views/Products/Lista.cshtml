@@ -1,0 +1,33 @@
+@model IEnumerable<NorthwindApp.Models.Product>
+
+@{
+    ViewData["Title"] = ViewBag.Titulo ?? "Consulta LINQ";
+}
+
+<h2>@ViewBag.Titulo</h2>
+<p><a asp-action="Index" class="btn btn-secondary btn-sm">← Volver al listado</a></p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nombre del Producto</th>
+            <th>Categoría</th>
+            <th>Proveedor</th>
+            <th>Precio</th>
+            <th>Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@(item.Category?.CategoryName ?? "—")</td>
+                <td>@(item.Supplier?.CompanyName ?? "—")</td>
+                <td>@item.UnitPrice?.ToString("C")</td>
+                <td>@item.UnitsInStock</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<p class="text-muted">Total: @Model.Count() productos</p>

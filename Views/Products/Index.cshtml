@@ -1,0 +1,59 @@
+@model IEnumerable<NorthwindApp.Models.Product>
+
+@{
+    ViewData["Title"] = "Productos";
+}
+
+<h1>Productos</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Nuevo Producto</a>
+    <a asp-action="MasCaros" class="btn btn-outline-secondary btn-sm">10 Más Caros</a>
+    <a asp-action="BuscarPorNombre" class="btn btn-outline-secondary btn-sm">Buscar por Nombre</a>
+    <a asp-action="PorCategoria" class="btn btn-outline-secondary btn-sm">Por Categoría</a>
+    <a asp-action="PorProveedor" class="btn btn-outline-secondary btn-sm">Por Proveedor</a>
+    <a asp-action="EnPedidos" class="btn btn-outline-secondary btn-sm">En Pedidos</a>
+    <a asp-action="StockBajo" class="btn btn-outline-secondary btn-sm">Stock Bajo</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nombre del Producto</th>
+            <th>Categoría</th>
+            <th>Proveedor</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@(item.Category?.CategoryName ?? "—")</td>
+                <td>@(item.Supplier?.CompanyName ?? "—")</td>
+                <td>@item.UnitPrice?.ToString("C")</td>
+                <td>@item.UnitsInStock</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.ProductId">Ver</a> |
+                    <a asp-action="Edit" asp-route-id="@item.ProductId">Editar</a> |
+                    <a asp-action="Delete" asp-route-id="@item.ProductId">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav>
+    <ul class="pagination">
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == ViewBag.Page ? "active" : "")">
+                <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
+<p class="text-muted">Página @ViewBag.Page de @ViewBag.TotalPages</p>

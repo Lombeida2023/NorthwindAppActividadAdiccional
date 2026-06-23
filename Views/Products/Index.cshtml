@@ -6,14 +6,25 @@
 
 <h1>Productos</h1>
 
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @TempData["Mensaje"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <p>
-    <a asp-action="Create" class="btn btn-primary">Nuevo Producto</a>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary">Nuevo Producto</a>
+    }
     <a asp-action="MasCaros" class="btn btn-outline-secondary btn-sm">10 Más Caros</a>
     <a asp-action="BuscarPorNombre" class="btn btn-outline-secondary btn-sm">Buscar por Nombre</a>
     <a asp-action="PorCategoria" class="btn btn-outline-secondary btn-sm">Por Categoría</a>
     <a asp-action="PorProveedor" class="btn btn-outline-secondary btn-sm">Por Proveedor</a>
     <a asp-action="EnPedidos" class="btn btn-outline-secondary btn-sm">En Pedidos</a>
-    <a asp-action="StockBajo" class="btn btn-outline-secondary btn-sm">Stock Bajo</a>
+    <a asp-action="StockBajo" class="btn btn-outline-warning btn-sm">Stock Bajo</a>
 </p>
 
 <table class="table table-striped">
@@ -35,11 +46,38 @@
                 <td>@(item.Category?.CategoryName ?? "—")</td>
                 <td>@(item.Supplier?.CompanyName ?? "—")</td>
                 <td>@item.UnitPrice?.ToString("C")</td>
-                <td>@item.UnitsInStock</td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@item.ProductId">Ver</a> |
-                    <a asp-action="Edit" asp-route-id="@item.ProductId">Editar</a> |
-                    <a asp-action="Delete" asp-route-id="@item.ProductId">Eliminar</a>
+                    @if (item.UnitsInStock <= item.ReorderLevel)
+                    {
+                        <span class="badge bg-warning text-dark">@item.UnitsInStock</span>
+                    }
+                    else
+                    {
+                        @item.UnitsInStock
+                    }
+                </td>
+                <td>
+                    @if (User.IsInRole("Customer"))
+                    {
+                        <form asp-controller="Carrito" asp-action="Agregar" method="post" class="d-inline">
+                            <input type="hidden" name="productId" value="@item.ProductId" />
+                            <input type="number" name="cantidad" value="1" min="1" max="@item.UnitsInStock"
+                                   class="form-control form-control-sm d-inline" style="width:65px" />
+                            <button type="submit" class="btn btn-success btn-sm">+ Carrito</button>
+                        </form>
+                    }
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Details" asp-route-id="@item.ProductId" class="btn btn-outline-info btn-sm">Ver</a>
+                        <a asp-action="Edit" asp-route-id="@item.ProductId" class="btn btn-outline-primary btn-sm">Editar</a>
+                        <a asp-action="IncrementarStock" asp-route-id="@item.ProductId" class="btn btn-outline-success btn-sm">+Stock</a>
+                        <a asp-action="ReducirStock" asp-route-id="@item.ProductId" class="btn btn-outline-warning btn-sm">-Stock</a>
+                        <a asp-action="Delete" asp-route-id="@item.ProductId" class="btn btn-outline-danger btn-sm">Eliminar</a>
+                    }
+                    @if (!User.IsInRole("Admin") && !User.IsInRole("Customer"))
+                    {
+                        <a asp-action="Details" asp-route-id="@item.ProductId">Ver</a>
+                    }
                 </td>
             </tr>
         }

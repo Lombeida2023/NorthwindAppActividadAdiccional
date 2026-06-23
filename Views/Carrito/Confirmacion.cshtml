@@ -1,0 +1,58 @@
+@model NorthwindApp.Models.Order
+
+@{
+    ViewData["Title"] = "Compra Confirmada";
+    var total = Model.OrderDetails.Sum(od => od.UnitPrice * od.Quantity);
+}
+
+<div class="text-center my-4">
+    <h2 class="text-success">¡Compra realizada con éxito!</h2>
+    <p class="lead">Tu pedido ha sido registrado en el sistema.</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Orden #@Model.OrderId</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Cliente</dt>
+            <dd class="col-sm-9">@Model.ShipName</dd>
+            <dt class="col-sm-3">Fecha</dt>
+            <dd class="col-sm-9">@Model.OrderDate</dd>
+        </dl>
+    </div>
+</div>
+
+<h4>Detalle de Productos</h4>
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Producto</th>
+            <th>Precio Unitario</th>
+            <th>Cantidad</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var od in Model.OrderDetails)
+        {
+            <tr>
+                <td>@od.Product.ProductName</td>
+                <td>@od.UnitPrice.ToString("C")</td>
+                <td>@od.Quantity</td>
+                <td><strong>@((od.UnitPrice * od.Quantity).ToString("C"))</strong></td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr class="table-success">
+            <td colspan="3"><strong>TOTAL PAGADO</strong></td>
+            <td><strong class="fs-5">@total.ToString("C")</strong></td>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="mt-3">
+    <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Seguir comprando</a>
+</div>

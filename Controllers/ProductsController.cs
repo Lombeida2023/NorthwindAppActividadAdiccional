@@ -43,9 +43,11 @@ namespace NorthwindApp.Controllers
             var productos = await _context.Products
                 .Where(p => !p.Discontinued)
                 .Include(p => p.Category)
+                .Include(p => p.Supplier)
                 .OrderByDescending(p => p.UnitPrice)
                 .Take(10)
                 .ToListAsync();
+            ViewBag.Titulo = "10 Productos Más Caros";
             return View("Lista", productos);
         }
 
@@ -56,6 +58,7 @@ namespace NorthwindApp.Controllers
             var productos = await _context.Products
                 .Where(p => p.ProductName.ToLower().Contains(keyword) && !p.Discontinued)
                 .Include(p => p.Category)
+                .Include(p => p.Supplier)
                 .ToListAsync();
             ViewBag.Titulo = $"Productos que contienen: '{keyword}'";
             return View("Lista", productos);
@@ -67,6 +70,8 @@ namespace NorthwindApp.Controllers
             var productos = await (
                 from p in _context.Products
                 join c in _context.Categories on p.CategoryId equals c.CategoryId
+                join s in _context.Suppliers on p.SupplierId equals s.SupplierId into ps
+                from s in ps.DefaultIfEmpty()
                 where c.CategoryName == "Beverages" && !p.Discontinued
                 select new Product
                 {
@@ -74,7 +79,8 @@ namespace NorthwindApp.Controllers
                     ProductName = p.ProductName,
                     UnitPrice = p.UnitPrice,
                     UnitsInStock = p.UnitsInStock,
-                    Category = c
+                    Category = c,
+                    Supplier = s
                 }).ToListAsync();
 
             ViewBag.Titulo = "Productos de la categoría: Beverages (Join)";
@@ -86,6 +92,7 @@ namespace NorthwindApp.Controllers
         {
             var productos = await _context.Products
                 .Include(p => p.Supplier)
+                .Include(p => p.Category)
                 .Where(p => p.Supplier!.CompanyName == "Exotic Liquids" && !p.Discontinued)
                 .ToListAsync();
             ViewBag.Titulo = "Productos del proveedor: Exotic Liquids";
@@ -98,6 +105,7 @@ namespace NorthwindApp.Controllers
             var productos = await _context.Products
                 .Where(p => p.OrderDetails.Any() && !p.Discontinued)
                 .Include(p => p.Category)
+                .Include(p => p.Supplier)
                 .OrderBy(p => p.ProductName)
                 .Take(10)
                 .ToListAsync();
@@ -213,7 +221,7 @@ namespace NorthwindApp.Controllers
             return View(product);
         }
 
-        // Eliminación LÓGICA: marca Discontinued = true, no borra el registro
+        // Eliminación LÓGICA: marca Discontinued = true
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -226,6 +234,74 @@ namespace NorthwindApp.Controllers
                 _context.Update(product);
                 await _context.SaveChangesAsync();
             }
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Products/IncrementarStock/5
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> IncrementarStock(int? id)
+        {
+            if (id == null) return NotFound();
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return NotFound();
+            return View(product);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> IncrementarStock(int id, int cantidad)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return NotFound();
+
+            if (cantidad <= 0)
+            {
+                ModelState.AddModelError("", "La cantidad debe ser mayor a 0.");
+                return View(product);
+            }
+
+            product.UnitsInStock = (short)(product.UnitsInStock.GetValueOrDefault() + cantidad);
+            _context.Update(product);
+            await _context.SaveChangesAsync();
+            TempData["Mensaje"] = $"Stock de '{product.ProductName}' incrementado en {cantidad}. Nuevo stock: {product.UnitsInStock}.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Products/ReducirStock/5
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ReducirStock(int? id)
+        {
+            if (id == null) return NotFound();
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return NotFound();
+            return View(product);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ReducirStock(int id, int cantidad)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return NotFound();
+
+            if (cantidad <= 0)
+            {
+                ModelState.AddModelError("", "La cantidad debe ser mayor a 0.");
+                return View(product);
+            }
+
+            if (product.UnitsInStock < cantidad)
+            {
+                ModelState.AddModelError("", $"Stock insuficiente. Stock actual: {product.UnitsInStock}.");
+                return View(product);
+            }
+
+            product.UnitsInStock = (short)(product.UnitsInStock.GetValueOrDefault() - cantidad);
+            _context.Update(product);
+            await _context.SaveChangesAsync();
+            TempData["Mensaje"] = $"Stock de '{product.ProductName}' reducido en {cantidad}. Nuevo stock: {product.UnitsInStock}.";
             return RedirectToAction(nameof(Index));
         }
 

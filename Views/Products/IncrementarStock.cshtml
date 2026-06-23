@@ -1,0 +1,43 @@
+@model NorthwindApp.Models.Product
+
+@{
+    ViewData["Title"] = "Incrementar Stock";
+}
+
+<h2>Incrementar Stock</h2>
+
+<div class="card" style="max-width:500px">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">@Model.ProductName</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-6">Stock actual</dt>
+            <dd class="col-sm-6"><strong class="fs-5">@Model.UnitsInStock unidades</strong></dd>
+            <dt class="col-sm-6">Nivel de reorden</dt>
+            <dd class="col-sm-6">@Model.ReorderLevel unidades</dd>
+        </dl>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <form asp-action="IncrementarStock" method="post">
+            <input type="hidden" name="id" value="@Model.ProductId" />
+            <div class="mb-3">
+                <label class="form-label fw-bold">Cantidad a incrementar</label>
+                <input type="number" name="cantidad" min="1" value="1" class="form-control" required />
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Incrementar Stock</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

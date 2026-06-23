@@ -404,3 +404,10 @@ C:\Users\aefaj\NorthwindApp\obj\Release\net10.0\refint\NorthwindApp.dll
 C:\Users\aefaj\NorthwindApp\obj\Release\net10.0\NorthwindApp.pdb
 C:\Users\aefaj\NorthwindApp\obj\Release\net10.0\NorthwindApp.genruntimeconfig.cache
 C:\Users\aefaj\NorthwindApp\obj\Release\net10.0\ref\NorthwindApp.dll
+C:\Users\aefaj\NorthwindApp\bin\Release\net10.0\Publicacion\web.config
+C:\Users\aefaj\NorthwindApp\bin\Release\net10.0\Publicacion\appsettings.Development.json
+C:\Users\aefaj\NorthwindApp\bin\Release\net10.0\Publicacion\appsettings.json
+C:\Users\aefaj\NorthwindApp\bin\Release\net10.0\Publicacion\NorthwindApp.deps.json
+C:\Users\aefaj\NorthwindApp\bin\Release\net10.0\Publicacion\NorthwindApp.runtimeconfig.json
+C:\Users\aefaj\NorthwindApp\bin\Release\net10.0\Publicacion\NorthwindApp.staticwebassets.endpoints.json
+C:\Users\aefaj\NorthwindApp\obj\Release\net10.0\NorthwindApp.sourcelink.json

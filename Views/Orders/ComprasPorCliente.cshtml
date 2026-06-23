@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Compras por Cliente";
+    var compras = ViewBag.ComprasPorCliente as IEnumerable<dynamic>;
+}
+
+<h2>Compras por Cliente</h2>
+<p><a asp-action="Index" class="btn btn-outline-secondary btn-sm">← Volver a Pedidos</a></p>
+
+@if (compras == null || !compras.Any())
+{
+    <div class="alert alert-info">No hay compras registradas.</div>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Cliente / Comprador</th>
+                <th>Total Órdenes</th>
+                <th>Total Comprado</th>
+                <th>Detalle</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var grupo in compras)
+            {
+                <tr>
+                    <td><strong>@grupo.Cliente</strong></td>
+                    <td>@grupo.TotalOrdenes</td>
+                    <td><strong>@((grupo.TotalComprado as decimal?)?.ToString("C") ?? "$0.00")</strong></td>
+                    <td>
+                        @foreach (var orden in grupo.Ordenes)
+                        {
+                            <a asp-action="Details" asp-route-id="@orden.OrderId"
+                               class="btn btn-outline-info btn-sm me-1 mb-1">
+                                #@orden.OrderId (@orden.OrderDate)
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

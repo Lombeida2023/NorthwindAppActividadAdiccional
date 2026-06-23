@@ -17,42 +17,41 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
-// Crear roles y usuario Admin por defecto
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-    // Crear roles
-    foreach (var role in new[] { "Admin", "Employee" })
+    foreach (var role in new[] { "Admin", "Employee", "Customer" })
     {
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
     }
 
-    // Crear usuario Admin por defecto
-    string adminEmail = "admin@northwind.com";
-    string adminPassword = "Admin123!";
-    if (await userManager.FindByEmailAsync(adminEmail) == null)
+    async Task CrearUsuario(string email, string password, string rol)
     {
-        var adminUser = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
-        var result = await userManager.CreateAsync(adminUser, adminPassword);
-        if (result.Succeeded)
-            await userManager.AddToRoleAsync(adminUser, "Admin");
+        if (await userManager.FindByEmailAsync(email) == null)
+        {
+            var user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
+            var result = await userManager.CreateAsync(user, password);
+            if (result.Succeeded)
+                await userManager.AddToRoleAsync(user, rol);
+        }
     }
 
-    // Crear usuario Employee por defecto
-    string empEmail = "employee@northwind.com";
-    string empPassword = "Employee123!";
-    if (await userManager.FindByEmailAsync(empEmail) == null)
-    {
-        var empUser = new IdentityUser { UserName = empEmail, Email = empEmail, EmailConfirmed = true };
-        var result = await userManager.CreateAsync(empUser, empPassword);
-        if (result.Succeeded)
-            await userManager.AddToRoleAsync(empUser, "Employee");
-    }
+    await CrearUsuario("admin@northwind.com", "Admin123!", "Admin");
+    await CrearUsuario("employee@northwind.com", "Employee123!", "Employee");
+    await CrearUsuario("customer@northwind.com", "Customer123!", "Customer");
 }
 
 if (!app.Environment.IsDevelopment())
@@ -63,6 +62,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapStaticAssets();

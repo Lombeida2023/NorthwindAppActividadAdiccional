@@ -1,0 +1,73 @@
+@model List<NorthwindApp.Models.CarritoItem>
+
+@{
+    ViewData["Title"] = "Mi Carrito";
+}
+
+<h2>Mi Carrito de Compras</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Tu carrito está vacío. <a asp-controller="Products" asp-action="Index">Ver productos disponibles</a>
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Producto</th>
+                <th>Precio Unitario</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@item.UnitPrice.ToString("C")</td>
+                    <td>
+                        <form asp-action="ActualizarCantidad" method="post" class="d-flex align-items-center gap-2">
+                            <input type="hidden" name="productId" value="@item.ProductId" />
+                            <input type="number" name="cantidad" value="@item.Quantity" min="1" class="form-control form-control-sm" style="width:80px" />
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">Actualizar</button>
+                        </form>
+                    </td>
+                    <td><strong>@item.Subtotal.ToString("C")</strong></td>
+                    <td>
+                        <form asp-action="Eliminar" method="post" style="display:inline">
+                            <input type="hidden" name="productId" value="@item.ProductId" />
+                            <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('¿Quitar este producto del carrito?')">Quitar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr class="table-success">
+                <td colspan="3"><strong>TOTAL</strong></td>
+                <td colspan="2"><strong class="fs-5">@Model.Sum(i => i.Subtotal).ToString("C")</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="d-flex gap-2 mt-3">
+        <a asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary">Seguir comprando</a>
+        <form asp-action="Confirmar" method="post">
+            <button type="submit" class="btn btn-success btn-lg"
+                    onclick="return confirm('¿Confirmar la compra de @Model.Count producto(s)?')">
+                Confirmar Compra
+            </button>
+        </form>
+    </div>
+}

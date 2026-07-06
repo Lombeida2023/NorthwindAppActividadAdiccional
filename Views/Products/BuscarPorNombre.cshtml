@@ -1,0 +1,68 @@
+@model IEnumerable<NorthwindApp.Models.Product>
+
+@{
+    ViewData["Title"] = "Buscar Productos";
+    string searchQuery = ViewBag.SearchQuery ?? "";
+}
+
+<h2>Buscar Productos por Nombre</h2>
+
+<form asp-action="BuscarPorNombre" method="get" class="d-flex gap-2 mb-4" style="max-width:500px">
+    <input type="text" name="q" value="@searchQuery" class="form-control"
+           placeholder="Ej: chai, tofu, sauce..." />
+    <button type="submit" class="btn btn-primary">Buscar</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
+</form>
+
+@if (!string.IsNullOrEmpty(searchQuery))
+{
+    <p class="text-muted">@ViewBag.Titulo — <strong>@Model.Count() resultado(s)</strong></p>
+}
+
+@if (Model.Any())
+{
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre del Producto</th>
+                <th>Categoría</th>
+                <th>Proveedor</th>
+                <th class="text-end">Precio</th>
+                <th class="text-center">Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@(item.Category?.CategoryName ?? "—")</td>
+                    <td>@(item.Supplier?.CompanyName ?? "—")</td>
+                    <td class="text-end">@item.UnitPrice?.ToString("C")</td>
+                    <td class="text-center">
+                        @if (item.UnitsInStock == 0)
+                        {
+                            <span class="badge bg-danger">Sin stock</span>
+                        }
+                        else if (item.UnitsInStock <= item.ReorderLevel)
+                        {
+                            <span class="badge bg-warning text-dark">@item.UnitsInStock</span>
+                        }
+                        else
+                        {
+                            <span>@item.UnitsInStock</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (!string.IsNullOrEmpty(searchQuery))
+{
+    <div class="alert alert-warning">
+        No se encontraron productos que contengan "<strong>@searchQuery</strong>".
+    </div>
+}
+
+<p><a asp-action="Index" class="btn btn-secondary btn-sm">← Volver al listado</a></p>

@@ -14,10 +14,20 @@
     </div>
 }
 
-<p>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="d-flex flex-wrap gap-2 mb-3">
     @if (User.IsInRole("Admin"))
     {
-        <a asp-action="Create" class="btn btn-primary">Nuevo Producto</a>
+        <a asp-action="Create" class="btn btn-primary btn-sm">Nuevo Producto</a>
+        <a asp-action="Descontinuados" class="btn btn-outline-danger btn-sm">Descontinuados</a>
+        <a asp-action="SinExistencias" class="btn btn-outline-dark btn-sm">Sin Existencias</a>
     }
     <a asp-action="MasCaros" class="btn btn-outline-secondary btn-sm">10 Más Caros</a>
     <a asp-action="BuscarPorNombre" class="btn btn-outline-secondary btn-sm">Buscar por Nombre</a>
@@ -25,7 +35,8 @@
     <a asp-action="PorProveedor" class="btn btn-outline-secondary btn-sm">Por Proveedor</a>
     <a asp-action="EnPedidos" class="btn btn-outline-secondary btn-sm">En Pedidos</a>
     <a asp-action="StockBajo" class="btn btn-outline-warning btn-sm">Stock Bajo</a>
-</p>
+    <a asp-action="MasComprados" class="btn btn-outline-info btn-sm">Más Comprados</a>
+</div>
 
 <table class="table table-striped">
     <thead>
@@ -59,12 +70,19 @@
                 <td>
                     @if (User.IsInRole("Customer"))
                     {
-                        <form asp-controller="Carrito" asp-action="Agregar" method="post" class="d-inline">
-                            <input type="hidden" name="productId" value="@item.ProductId" />
-                            <input type="number" name="cantidad" value="1" min="1" max="@item.UnitsInStock"
-                                   class="form-control form-control-sm d-inline" style="width:65px" />
-                            <button type="submit" class="btn btn-success btn-sm">+ Carrito</button>
-                        </form>
+                        if (item.UnitsInStock > 0)
+                        {
+                            <form asp-controller="Carrito" asp-action="Agregar" method="post" class="d-inline">
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <input type="number" name="cantidad" value="1" min="1" max="@item.UnitsInStock"
+                                       class="form-control form-control-sm d-inline" style="width:65px" />
+                                <button type="submit" class="btn btn-success btn-sm">+ Carrito</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Sin stock</span>
+                        }
                     }
                     @if (User.IsInRole("Admin"))
                     {

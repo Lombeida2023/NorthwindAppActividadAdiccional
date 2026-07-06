@@ -51,17 +51,21 @@ namespace NorthwindApp.Controllers
             return View("Lista", productos);
         }
 
-        // LINQ 2: productos cuyo nombre contiene una palabra
-        public async Task<IActionResult> BuscarPorNombre()
+        // LINQ 2: productos cuyo nombre contiene una palabra (búsqueda dinámica)
+        public async Task<IActionResult> BuscarPorNombre(string? q)
         {
-            string keyword = "chai";
+            string keyword = string.IsNullOrWhiteSpace(q) ? "" : q.Trim();
             var productos = await _context.Products
-                .Where(p => p.ProductName.ToLower().Contains(keyword) && !p.Discontinued)
+                .Where(p => p.ProductName.ToLower().Contains(keyword.ToLower()) && !p.Discontinued)
                 .Include(p => p.Category)
                 .Include(p => p.Supplier)
+                .OrderBy(p => p.ProductName)
                 .ToListAsync();
-            ViewBag.Titulo = $"Productos que contienen: '{keyword}'";
-            return View("Lista", productos);
+            ViewBag.Titulo = string.IsNullOrEmpty(keyword)
+                ? "Todos los productos disponibles"
+                : $"Productos que contienen: '{keyword}'";
+            ViewBag.SearchQuery = keyword;
+            return View("BuscarPorNombre", productos);
         }
 
         // LINQ 3: productos con Join por categoría específica
@@ -124,6 +128,60 @@ namespace NorthwindApp.Controllers
                 .ToListAsync();
             ViewBag.Titulo = "Productos con stock bajo (stock < nivel de reorden)";
             return View("Lista", productos);
+        }
+
+        // LINQ 7: productos sin existencias (stock = 0, no descontinuados)
+        public async Task<IActionResult> SinExistencias()
+        {
+            var productos = await _context.Products
+                .Where(p => !p.Discontinued && p.UnitsInStock == 0)
+                .Include(p => p.Category)
+                .Include(p => p.Supplier)
+                .OrderBy(p => p.ProductName)
+                .ToListAsync();
+            ViewBag.Titulo = "Productos sin existencias (stock = 0)";
+            return View("Lista", productos);
+        }
+
+        // LINQ 8: productos descontinuados (solo Admin)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Descontinuados()
+        {
+            var productos = await _context.Products
+                .Where(p => p.Discontinued)
+                .Include(p => p.Category)
+                .Include(p => p.Supplier)
+                .OrderBy(p => p.ProductName)
+                .ToListAsync();
+            ViewBag.Titulo = "Productos descontinuados";
+            return View("Lista", productos);
+        }
+
+        // LINQ 9: 10 productos más comprados (por cantidad vendida en OrderDetails)
+        public async Task<IActionResult> MasComprados()
+        {
+            // Obtener IDs ordenados por cantidad total vendida
+            var topIds = await _context.OrderDetails
+                .GroupBy(od => od.ProductId)
+                .OrderByDescending(g => g.Sum(od => (int)od.Quantity))
+                .Take(10)
+                .Select(g => g.Key)
+                .ToListAsync();
+
+            var productos = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Supplier)
+                .Where(p => topIds.Contains(p.ProductId))
+                .ToListAsync();
+
+            // Reordenar según ranking de ventas
+            var ordenados = topIds
+                .Select(id => productos.FirstOrDefault(p => p.ProductId == id))
+                .Where(p => p != null)
+                .ToList();
+
+            ViewBag.Titulo = "10 Productos Más Comprados";
+            return View("Lista", ordenados);
         }
 
         // GET: Products/Details/5

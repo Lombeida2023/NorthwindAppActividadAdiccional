@@ -8,13 +8,17 @@
 
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
 @if (!Model.Any())
 {
     <div class="alert alert-info">
-        Tu carrito está vacío. <a asp-controller="Products" asp-action="Index">Ver productos disponibles</a>
+        Tu carrito está vacío.
+        <a asp-controller="Products" asp-action="Index" class="alert-link">Ver productos disponibles</a>
     </div>
 }
 else
@@ -23,10 +27,10 @@ else
         <thead class="table-dark">
             <tr>
                 <th>Producto</th>
-                <th>Precio Unitario</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th>Acciones</th>
+                <th class="text-end">Precio Unitario</th>
+                <th class="text-center">Cantidad</th>
+                <th class="text-end">Subtotal</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -34,17 +38,21 @@ else
             {
                 <tr>
                     <td>@item.ProductName</td>
-                    <td>@item.UnitPrice.ToString("C")</td>
-                    <td>
-                        <form asp-action="ActualizarCantidad" method="post" class="d-flex align-items-center gap-2">
+                    <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                    <td class="text-center">
+                        <form asp-action="ActualizarCantidad" method="post" class="d-flex align-items-center justify-content-center gap-2">
+                            @Html.AntiForgeryToken()
                             <input type="hidden" name="productId" value="@item.ProductId" />
-                            <input type="number" name="cantidad" value="@item.Quantity" min="1" class="form-control form-control-sm" style="width:80px" />
+                            <input type="number" name="cantidad" value="@item.Quantity" min="1"
+                                   class="form-control form-control-sm text-center" style="width:75px"
+                                   required />
                             <button type="submit" class="btn btn-outline-secondary btn-sm">Actualizar</button>
                         </form>
                     </td>
-                    <td><strong>@item.Subtotal.ToString("C")</strong></td>
-                    <td>
+                    <td class="text-end"><strong>@item.Subtotal.ToString("C")</strong></td>
+                    <td class="text-center">
                         <form asp-action="Eliminar" method="post" style="display:inline">
+                            @Html.AntiForgeryToken()
                             <input type="hidden" name="productId" value="@item.ProductId" />
                             <button type="submit" class="btn btn-danger btn-sm"
                                     onclick="return confirm('¿Quitar este producto del carrito?')">Quitar</button>
@@ -55,8 +63,11 @@ else
         </tbody>
         <tfoot>
             <tr class="table-success">
-                <td colspan="3"><strong>TOTAL</strong></td>
-                <td colspan="2"><strong class="fs-5">@Model.Sum(i => i.Subtotal).ToString("C")</strong></td>
+                <td colspan="2"><strong>Total de productos: @Model.Sum(i => i.Quantity) unidad(es)</strong></td>
+                <td colspan="2" class="text-end">
+                    <strong class="fs-5">TOTAL: @Model.Sum(i => i.Subtotal).ToString("C")</strong>
+                </td>
+                <td></td>
             </tr>
         </tfoot>
     </table>
@@ -64,6 +75,7 @@ else
     <div class="d-flex gap-2 mt-3">
         <a asp-controller="Products" asp-action="Index" class="btn btn-outline-secondary">Seguir comprando</a>
         <form asp-action="Confirmar" method="post">
+            @Html.AntiForgeryToken()
             <button type="submit" class="btn btn-success btn-lg"
                     onclick="return confirm('¿Confirmar la compra de @Model.Count producto(s)?')">
                 Confirmar Compra

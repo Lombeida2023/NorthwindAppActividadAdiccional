@@ -1,0 +1,61 @@
+@model NorthwindApp.Models.Order
+
+@{
+    ViewData["Title"] = $"Detalle Orden #{Model.OrderId}";
+    var total = Model.OrderDetails.Sum(od => od.UnitPrice * od.Quantity);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Detalle de Orden #@Model.OrderId</h2>
+    <a asp-action="MisOrdenes" class="btn btn-outline-secondary">← Mis Pedidos</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Información del Pedido</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Número de Orden</dt>
+            <dd class="col-sm-9">#@Model.OrderId</dd>
+            <dt class="col-sm-3">Fecha</dt>
+            <dd class="col-sm-9">@Model.OrderDate?.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-3">Cliente</dt>
+            <dd class="col-sm-9">@Model.ShipName</dd>
+        </dl>
+    </div>
+</div>
+
+<h4>Productos adquiridos</h4>
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Producto</th>
+            <th class="text-end">Precio Unitario</th>
+            <th class="text-center">Cantidad</th>
+            <th class="text-end">Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var od in Model.OrderDetails)
+        {
+            var subtotal = od.UnitPrice * od.Quantity;
+            <tr>
+                <td>@od.Product?.ProductName</td>
+                <td class="text-end">@od.UnitPrice.ToString("C")</td>
+                <td class="text-center">@od.Quantity</td>
+                <td class="text-end"><strong>@subtotal.ToString("C")</strong></td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr class="table-success">
+            <td colspan="3" class="text-end"><strong>TOTAL PAGADO</strong></td>
+            <td class="text-end"><strong class="fs-5">@total.ToString("C")</strong></td>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="mt-3">
+    <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Seguir comprando</a>
+</div>

@@ -148,9 +148,16 @@ namespace NorthwindApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.OrderId == id);
+
             if (order != null)
+            {
+                _context.OrderDetails.RemoveRange(order.OrderDetails);
                 _context.Orders.Remove(order);
+            }
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

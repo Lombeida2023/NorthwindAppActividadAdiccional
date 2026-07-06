@@ -1,0 +1,50 @@
+@model IEnumerable<NorthwindApp.Models.Order>
+
+@{
+    ViewData["Title"] = "Mis Pedidos";
+}
+
+<h2>Mis Pedidos</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Aún no has realizado ninguna compra.
+        <a asp-controller="Products" asp-action="Index" class="alert-link">Ver productos disponibles</a>
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th># Orden</th>
+                <th>Fecha</th>
+                <th>Productos</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var orden in Model)
+            {
+                var total = orden.OrderDetails.Sum(od => od.UnitPrice * od.Quantity);
+                <tr>
+                    <td><strong>#@orden.OrderId</strong></td>
+                    <td>@orden.OrderDate?.ToString("dd/MM/yyyy")</td>
+                    <td>@orden.OrderDetails.Count item(s)</td>
+                    <td><strong>@total.ToString("C")</strong></td>
+                    <td>
+                        <a asp-action="MisOrdenDetalle" asp-route-orderId="@orden.OrderId"
+                           class="btn btn-outline-primary btn-sm">Ver detalle</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="text-muted">Total de pedidos: @Model.Count()</p>
+}
+
+<div class="mt-3">
+    <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Seguir comprando</a>
+</div>

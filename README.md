@@ -1,4 +1,4 @@
-# NorthwindApp — Actividad Voluntaria Segundo Parcial
+# NorthwindApp — Actividad
 
 Aplicación web desarrollada con **ASP.NET Core MVC (.NET 10)** y **PostgreSQL**, basada en la base de datos Northwind. Implementa autenticación con roles, CRUD de productos, consultas LINQ, carrito de compras con transacción atómica y publicación en modo Release.
 
